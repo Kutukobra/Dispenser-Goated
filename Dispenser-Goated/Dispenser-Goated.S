@@ -1,6 +1,8 @@
 #define __SFR_OFFSET 0x00
 #include "avr/io.h"
-#define LCD 0x27
+
+#define LCD_ADDR 0x27
+#define BACKLIGHT 0x8
 
 ; Kelompok 25
 
@@ -11,14 +13,17 @@ main:
   rcall I2C_init
 
 loop:
+  rcall LCD_backlight
+  rjmp loop
+
+LCD_backlight:
   rcall I2C_start
-  ldi r16, (LCD << 1) | 0
+  ldi r16, (LCD_ADDR << 1) | 0
   rcall I2C_write
-  ldi r16, 0x0
+  ldi r16, 0x8
   rcall I2C_write
   rcall I2C_stop
-  
-  rjmp loop
+  ret
 
 I2C_init:
   ; Prescaler = 1
