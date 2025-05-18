@@ -16,6 +16,10 @@
         "string": "cpp",
         "unordered_map": "cpp",
         "string_view": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "cstdint": "cpp",
+        "atomic": "cpp",
+        "ios": "cpp",
+        "xiosbase": "cpp"
     }
 }
