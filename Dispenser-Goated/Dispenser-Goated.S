@@ -17,10 +17,15 @@
 main:
   rcall I2C_init
   rcall LCD_init
+  ; Set pin sensor
+  ldi r16, (1 << PD2)
+  out DDRD, r16
 
 loop:
-  ldi r16, 'A'
-  rcall LCD_data
+  rcall read_ultrasonic 
+  rcall LCD_clear
+  rcall print_number_to_lcd 
+  rcall delay
   rjmp loop
 
 LCD_init:
@@ -164,4 +169,107 @@ I2C_wait:
   lds r16, TWCR
   sbrs r16, TWINT
   rjmp I2C_wait
+  ret
+
+; Untuk menghasilkan jarak dalam cm (di r24)
+read_ultrasonic:
+  sbi PORTD, PD2
+  rcall short_delay
+  cbi PORTD, PD2
+
+; Tunggu sampai echo jadi high
+wait_echo_high:
+  sbis PIND, PD3
+  rjmp wait_echo_high
+  clr r24
+  clr r25
+
+measure_echo:
+  sbic PIND, PD3
+  rjmp still_high
+
+  rjmp end_measure
+
+still_high:
+  adiw r24, 1
+  cpi r24, 255
+  brne measure_echo
+  inc r25
+  rjmp measure_echo
+
+; Pakai perhitungan Polling Based
+end_measure:
+  ; Hitungan r24-r25 akan proporsional terhadap waktu => hitung jarak
+  ; Jadi jarak (cm) = waktu / 58
+  ; Biar hemat, pakai pembagian kasar: jarak = count / 58
+
+  ; Pakai r24 untuk simplifikasi (jika <255)
+  ldi r18, 58
+  clr r19
+  mov r20, r24
+  clr r21
+
+divloop:
+  cp r20, r18
+  brlo divdone
+  sub r20, r18
+  inc r21
+  rjmp divloop
+
+divdone:
+  mov r24, r21 ; hasil jarak dalam cm
+  ret
+
+short_delay:
+  ; ~10us delay
+  ldi r18, 30
+s_delay:
+  dec r18
+  brne s_delay
+  ret
+
+; Menampilkan isi ke LCD dengan desimal
+; Input: r24 (angka 0-255)
+; Output: Tampilkan sebagai string ke LCD
+print_number_to_lcd:
+  ldi r22, 100
+  clr r25
+
+digit_loop:
+  cp r24, r22
+  brlo next_digit
+  sub r24, r22
+  inc r25
+  rjmp digit_loop
+
+next_digit:
+  mov r16, r25
+  ldi r17, 48
+  add r16, r17
+  rcall LCD_data
+
+  ; Lanjut dengan puluhan dan satuan
+  ldi r22, 10
+  clr r25
+
+digit_loop2:
+  cp r24, r22
+  brlo next_digit2
+  sub r24, r22
+  inc r25
+  rjmp digit_loop2
+
+next_digit2:
+  mov r16, r25
+  ldi r17, 48
+  add r16, r17
+  add r16, r17
+  rcall LCD_data
+
+  ; Satuan
+  mov r16, r24
+  ldi r17, 48
+  add r16, r17
+  add r16, r17
+  rcall LCD_data
   ret
