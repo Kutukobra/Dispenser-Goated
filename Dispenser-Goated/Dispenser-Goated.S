@@ -18,9 +18,12 @@ main:
   rcall I2C_init
   rcall LCD_init
   rcall LCD_home
+
 loop:
-  rcall LCD_data
-  rcall LCD_clear
+  ldi r30, lo8(display_message)
+  ldi r31, hi8(display_message)
+  call LCD_print
+  rcall LCD_home
   rjmp loop
 
 LCD_init:
@@ -61,7 +64,12 @@ LCD_home:
 
 ; Prints Mem(Z) to LCD until null termination
 LCD_print:
-  
+  ld r16, Z+
+  tst r16
+  breq print_exit
+  rcall LCD_data
+  rjmp LCD_print
+print_exit:
   ret
 
 ; Sends 8 bit command from r16
@@ -170,3 +178,7 @@ I2C_wait:
   sbrs r16, TWINT
   rjmp I2C_wait
   ret
+
+display_message:
+  .ascii "Testing"
+  .byte 0x0
