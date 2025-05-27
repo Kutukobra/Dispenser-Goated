@@ -20,7 +20,7 @@ main:
   rcall LCD_home
 loop:
   rcall LCD_data
-  ; rcall LCD_clear
+  rcall LCD_clear
   rjmp loop
 
 LCD_init:
@@ -57,6 +57,11 @@ LCD_home:
   ldi r16, 0x2
   rcall LCD_command
   rcall delay
+  ret
+
+; Prints Mem(Z) to LCD until null termination
+LCD_print:
+  
   ret
 
 ; Sends 8 bit command from r16
