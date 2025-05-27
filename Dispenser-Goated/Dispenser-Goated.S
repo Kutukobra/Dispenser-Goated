@@ -17,10 +17,10 @@
 main:
   rcall I2C_init
   rcall LCD_init
-
+  rcall LCD_home
 loop:
-  ldi r16, 'A'
   rcall LCD_data
+  ; rcall LCD_clear
   rjmp loop
 
 LCD_init:
@@ -36,8 +36,8 @@ LCD_init:
   ldi r16, 0x28
   rcall LCD_command  
 
-  ; Command display on, cursor blink
-  ldi r16, 0x0e
+  ; Command display on, cursor off
+  ldi r16, 0x0c
   rcall LCD_command
 
   rcall LCD_clear
@@ -115,7 +115,7 @@ LCD_pulseEnable:
   ret
 
 delay:
-    ldi r19, 255
+    ldi r19, 50
 .dl2:
     ldi r20, 255
 .dl3:
