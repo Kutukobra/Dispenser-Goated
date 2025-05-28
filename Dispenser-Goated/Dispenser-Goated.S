@@ -52,11 +52,10 @@ loop:
     ldi r30, lo8(fill_message)
     ldi r31, hi8(fill_message)
     rcall LCD_print
-    ldi r16, 0xC0
+    ldi r16, 0xC6
     rcall LCD_command
-    ldi r30, lo8(fill_message2)
-    ldi r31, hi8(fill_message2)
-    rcall LCD_print
+    mov r16, ADC_VAL
+    rcall LCD_hexout
     rjmp loop
   stop:
     cbi PORTD, PUMP_PIN  
@@ -344,9 +343,6 @@ delay:
 
 fill_message:
   .ascii "-== FILLING! ==-" 
-  .byte 0
-fill_message2:
-  .ascii "----------------" 
   .byte 0
 
 set_message:
